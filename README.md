@@ -19,7 +19,7 @@ the highest hands.
 Hands would be in the form of an array with to character strings. ie.
 
 ~~~
-high_of_jack = %w(4S 5S 7H 8D JC)
+high_of_jack  = %w(4S 5S 7H 8D JC)
 high_of_queen = %w(2S 4H 6S TD QH)
 ~~~
 
