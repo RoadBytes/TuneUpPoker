@@ -1,11 +1,12 @@
 # Tune Up: Poker
 
-* [here is a link to the repo for this challenge](https://github.com/RoadBytes/TuneUpPoke://github.com/RoadBytes/TuneUpPoker)
-
 Hello World!  This is the first of hopefully many coding challenges with
 RoadBytes.  A general description of tunes ups can be found here:
 
-[TODO: add link to tuneup description]
+[RoadBytes:Tune Ups Explained](http://roadbytes.me/personal/2016/09/08/tune_up_explained.html)
+
+If you understand how to work with Tune Ups,
+[here is a link to the repo for this challenge](https://github.com/RoadBytes/TuneUpPoker/tree/tune_up_poker_start)
 
 In [Launch School](https://launchschool.com), I was given a challenge to create
 a poker hand application that would take in a series of poker hands and return
@@ -47,8 +48,6 @@ method `Poker#best_hand` that didn't really fit in the Poker class.
 
 ~~~
   def best_hand
-    # TODO: remove this from Poker
-    # consider how it touches everything
     best_hands = best_ranked_hands
     highest_card_value = 0
     best_hands.each do |hand|
@@ -62,14 +61,12 @@ method `Poker#best_hand` that didn't really fit in the Poker class.
   end
 ~~~
 
-[TODO: add question toggle functionality here]
-
 ## Question
 
 Take a look at the Poker file and the method above and think of some reasons why
 it might be too complex
 
-## Answer
+## Answer (No peeking until you answered the question yourself)
 
 Just my opinion
 
@@ -79,8 +76,8 @@ Just my opinion
 
 What do you think?  Did you come up with other ways of thinking?
 
-> Your mission, should you choose to accept it, refactor `Poker#best_hand` in a
-> way that would be more sensible.
+# Your mission, should you choose to accept it,
+
+* refactor `Poker#best_hand` in a way that would be more sensible.
 
 After you finish, you can compare your work with my answer, :)
-
