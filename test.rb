@@ -176,7 +176,7 @@ class HandTest < Minitest::Test
 
   def test_values_various
     hand = Hand.new(['9S', '9D', 'TH'])
-    assert_equal [9, 9, 10], hand.values
+    assert_equal [10, 9, 9], hand.values
   end
 
   def test_frequency_hash
@@ -185,9 +185,9 @@ class HandTest < Minitest::Test
     assert_equal expected_hash, hand.value_frequency_hash
   end
 
-  def test_triple
+  def test_three_of_a_kind
     hand = Hand.new(['9H', '9S', '9D', 'TH'])
-    assert_equal true, hand.triple?
+    assert_equal true, hand.three_of_a_kind?
     assert_equal false, hand.double?
   end
 
@@ -209,12 +209,5 @@ class HandTest < Minitest::Test
     two_pair     = Hand.new(['3H', '3S', '5D', 'AH', '5C'])
     assert_equal false, high_straigh.two_pair?
     assert_equal true, two_pair.two_pair?
-  end
-
-  def test_max_card_value
-    high_straigh = Hand.new(['TH', 'JS', 'QD', 'KH', 'AC'])
-    low_straigh  = Hand.new(['4H', '3S', '2D', 'AH', '5C'])
-    assert_equal 14, high_straigh.max_card_value
-    assert_equal 5, low_straigh.max_card_value
   end
 end

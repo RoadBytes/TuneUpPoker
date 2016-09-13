@@ -3,58 +3,44 @@
 
 class Poker
   attr_reader :hands
-  def initialize(hand_array)
-    @hands = array_of_hands(hand_array)
-  end
-
-  def array_of_hands(hand_array)
-    temp_hands = []
-    hand_array.each do |hand|
-      temp_hands << Hand.new(hand)
-    end
-    temp_hands
-  end
-
-  def best_ranked_hands
-    best_rank = hands.map(&:ranking).max
-    hands.select { |hand| hand.ranking == best_rank }
+  def initialize(raw_hands)
+    @hands = raw_hands.map { |raw_hand| Hand.new(raw_hand) }
   end
 
   def best_hand
-    # TODO: Your mission, should you choose to accept it,
-    # refactor `Poker#best_hand` in a way that would be more sensible.
-    best_hands = best_ranked_hands
-    highest_card_value = 0
-    best_hands.each do |hand|
-      high_hand_value = hand.max_card_value
-      if high_hand_value > highest_card_value
-        highest_card_value = high_hand_value
-      end
-    end
-    best_hands.select { |hand| hand.max_card_value == highest_card_value }
-              .map(&:input)
+    best_hand = @hands.sort.last
+    @hands.select { |hand| hand.score_vector == best_hand.score_vector }
+          .map(&:output_hand)
   end
 end
 
 class Hand
+  CATEGORY_RANKINGS = {
+    straight_flush:  10,
+    four_of_a_kind:  9,
+    full_house:      8,
+    flush:           7,
+    straight:        6,
+    three_of_a_kind: 5,
+    two_pair:        4,
+    one_pair:        3,
+    high_card:       2
+  }.freeze
+
   attr_accessor :cards, :input
 
-  def initialize(hand_array)
-    @input = hand_array
-    @cards = cards_array(hand_array)
+  def <=>(other_hand)
+    score_vector <=> other_hand.score_vector
+  end
+
+  def initialize(raw_hand)
+    @cards = raw_hand.map { |raw_card| Card.new(raw_card) }
     check_for_low_ace
   end
 
-  def cards_array(hand_array)
-    temp_cards_array = []
-    hand_array.each do |card|
-      temp_cards_array << Card.new(card)
-    end
-    temp_cards_array.sort_by { |card| "#{card.value}#{card.suit}" }
-  end
-
   def check_for_low_ace
-    if values == [2, 3, 4, 5, 14]
+    # TODO: Clean up this ACE set up
+    if values == [14, 5, 4, 3, 2]
       reset_low_ace
     end
   end
@@ -66,20 +52,37 @@ class Hand
     end
   end
 
-  def ranking
-    return 0 unless cards.size == 5
-    # returns a array value of it's ranking
-    # and an array of values to compare
-    return [10, straight_flush_values] if straight_flush?
-    return [9, four_of_a_kind_values]  if four_of_a_kind?
-    return [8, full_house_values]      if full_house?
-    return [7, flush_values]           if flush?
-    return [6, straight_values]        if straight?
-    return [5, three_of_a_kind_values] if triple?
-    return [4, two_pair_values]        if two_pair?
-    return [3, one_pair_values]        if one_pair?
+  # returns array of integers sorted depending on rank and category
+  # see calculate_score_vector
+  def score_vector
+    @score_vector ||= calculate_score_vector
+  end
 
-    [2, values.reverse]
+  # [CATEGORY_RANKINGS[category], *sorted_hand]
+  # first ranking is compared, then relevant groups in the hand
+  # see sorted_hand
+  def calculate_score_vector
+    return 0 unless cards.size == 5
+    ranking = CATEGORY_RANKINGS[category]
+    [ranking, *sorted_hand]
+  end
+
+  # hand is sorted based on the hands category, ie.
+  # one_pair_values = [2, 3, 5, 3, 9]
+  # the sorted hand would be [3, 3, 9, 5, 2]
+  # pair must be placed before single cards
+  def sorted_hand
+    send("#{category}_values")
+  end
+
+  def category
+    @category ||= calculate_category
+  end
+
+  def calculate_category
+    CATEGORY_RANKINGS.each do |category, _rank|
+      return category if send("#{category}?")
+    end
   end
 
   def straight_flush?
@@ -115,7 +118,7 @@ class Hand
   end
 
   def flush_values
-    [max_card_value]
+    values.reverse
   end
 
   def straight?
@@ -123,7 +126,7 @@ class Hand
   end
 
   def straight_values
-    [max_card_value]
+    values
   end
 
   def same_suits?
@@ -160,6 +163,14 @@ class Hand
     [double, singles].flatten
   end
 
+  def high_card?
+    !same_suits? && !consecutive? && no_repeated_values?
+  end
+
+  def high_card_values
+    values
+  end
+
   def triple?
     value_frequency_hash.any? { |_card_number, count| count == 3 }
   end
@@ -175,13 +186,17 @@ class Hand
   end
 
   def values
-    # returns a array of the numbers in the hand
-    cards.map(&:value).sort
+    # returns a array of the numbers in the hand highest to lowest
+    cards.map(&:value).sort.reverse
+  end
+
+  def no_repeated_values?
+    values.uniq.size == values.size
   end
 
   def suits
     # returns the suit values
-    cards.map(&:suit).uniq
+    cards.map(&:suit).uniq.sort
   end
 
   def value_frequency_hash
@@ -196,10 +211,13 @@ class Hand
     end.keys.sort.reverse
   end
 
-  def max_card_value
-    values.last
+  def output_hand
+    cards.map(&:to_s)
   end
 end
+
+# TODO: consider HandCategorizer
+#
 
 class Card
   attr_accessor :value
